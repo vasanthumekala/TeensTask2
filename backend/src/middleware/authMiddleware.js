@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -16,20 +16,4 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-const roleMiddleware = (...allowedRoles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
-
-    if (!allowedRoles.includes(req.user.role)) {
-      return res
-        .status(403)
-        .json({ message: "Access denied. Insufficient permissions" });
-    }
-
-    next();
-  };
-};
-
-module.exports = { authMiddleware, roleMiddleware };
+export { authMiddleware };

@@ -4,7 +4,7 @@
   "description": "testingApi",
   "license": "ISC",
   "author": "vasanthu",
-  "type": "commonjs",
+  "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
