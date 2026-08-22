@@ -1,16 +1,20 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "../styles/Register.css";
+import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Register() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("user");
+  const [role, setRole] = useState("employee");
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState("");
-  const { register, loading, error } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -28,8 +32,29 @@ export default function Register() {
       return;
     }
 
-    const result = await register(email, password, role);
-
+    const register = async (name, email, password, role = "employee") => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axios.post(`${API_URL}/register`, {
+          name,
+          email,
+          password,
+          role,
+        });
+        console.log(response.data);
+        console.log(response);
+        return { success: true, user: response.data.user };
+      } catch (err) {
+        const errorMessage =
+          err.response?.data?.message || "Registration failed";
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      } finally {
+        setLoading(false);
+      }
+    };
+    const result = await register(name, email, password, role);
     if (result.success) {
       navigate("/login");
     }
@@ -40,6 +65,19 @@ export default function Register() {
       <div className="register-box">
         <h1>Create Account</h1>
         <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="name">Name:</label>
+            <input
+              id="name"
+              type="text"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
+
           <div className="form-group">
             <label htmlFor="email">Email:</label>
             <input
@@ -96,8 +134,9 @@ export default function Register() {
               onChange={(e) => setRole(e.target.value)}
               disabled={loading}
             >
-              <option value="user">User</option>
+              <option value="employee">Employee</option>
               <option value="admin">Admin</option>
+              <option value="manager">Manager</option>
             </select>
           </div>
 

@@ -1,19 +1,42 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../styles/Login.css";
+import { useAuth } from "../context/useAuth";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { login, loading, error } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { saveAuthentication } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await login(email, password);
+    const login = async (email, password) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axios.post(`${API_URL}/login`, {
+          email,
+          password,
+        });
+        const { jwt, user } = response.data;
+        saveAuthentication(jwt, user);
 
+        return { success: true, user };
+      } catch (err) {
+        const errorMessage = err.response?.data?.message || "Login failed";
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      } finally {
+        setLoading(false);
+      }
+    };
+    const result = await login(email, password);
     if (result.success) {
       navigate("/dashboard");
     }
@@ -73,4 +96,3 @@ export default function Login() {
     </div>
   );
 }
-
