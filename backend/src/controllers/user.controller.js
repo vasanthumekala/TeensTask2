@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import client from "../db/connet.js";
+import client from "../db/connect.js";
 import jwt from "jsonwebtoken";
 
 //registration for user

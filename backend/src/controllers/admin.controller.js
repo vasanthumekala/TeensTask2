@@ -1,8 +1,8 @@
-import client from "../db/connet.js";
+import client from "../db/connect.js";
 
 const adminPath = async (req,res) => {
     try {
-        const adminQuery = `SELECT * FROM admins;`;
+        const adminQuery = `SELECT admin_id,name,email,phone FROM admins;`;
         const adminResult = await client.query(adminQuery);
         res.status(200).json({message: "Admin data retrieved", result: adminResult.rows});
     } catch (error) {

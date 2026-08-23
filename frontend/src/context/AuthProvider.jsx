@@ -39,6 +39,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         isAuthenticated: Boolean(token),
+        token,
         user,
         saveAuthentication,
         logout,
