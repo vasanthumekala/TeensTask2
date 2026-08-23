@@ -1,7 +1,14 @@
-import client from "../db/connet.js";
+import client from "../db/connect.js";
 
 const employeePath = async (req,res) => {
-    res.status(201).json({message: "welcome employee"})
+    try{
+        const employeeQuery = `SELECT * FROM employees;`;
+        const employeeResult = await client.query(employeeQuery);
+        res.status(200).json({message: "Employee data retrieved", result: employeeResult.rows});
+    } catch (error) {
+        console.error("Employee path error:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
 }
 
 export {employeePath};

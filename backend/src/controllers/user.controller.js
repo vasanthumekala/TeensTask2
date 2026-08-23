@@ -37,7 +37,7 @@ export const registerUser = async (req, res) => {
 
     res.status(201).json({
       message: "User registered successfully",
-      result,
+      result: newEmployee,
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -55,6 +55,7 @@ export const login = async (req, res) => {
     if (userFind.rows.length === 0) {
       return res.status(409).json({ message: "user doesn't existed" });
     }
+    console.log(userFind.rows[0]);
     const { role, id } = userFind.rows[0];
     const verifyPassword = await bcrypt.compare(
       password,

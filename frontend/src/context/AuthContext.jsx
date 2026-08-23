@@ -8,5 +8,4 @@ const AuthContext = createContext({
 });
 
 
-
 export { AuthContext };
