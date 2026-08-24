@@ -1,140 +1,196 @@
-import { useAuth } from "../context/AuthContext";
-import { apiClient } from "../utils/apiClient";
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useAuth } from "../context/useAuth";
 import "../styles/Dashboard.css";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+const dataTabs = [
+  { key: "admin", label: "Admins", endpoint: "admin" },
+  { key: "employee", label: "Employees", endpoint: "employee" },
+  { key: "manager", label: "Managers", endpoint: "manager" },
+];
+
 export default function Dashboard() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [employees, setEmployees] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("employees");
+  const { user, token, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState("admin");
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    const selectedTab = dataTabs.find((tab) => tab.key === activeTab);
+    let isCurrentRequest = true;
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [empRes, clientRes] = await Promise.all([
-        apiClient.get("/getemployees"),
-        apiClient.get("/getclients"),
-      ]);
+    const fetchRecords = async () => {
+      setLoading(true);
+      setError("");
 
-      setEmployees(empRes.data);
-      setClients(clientRes.data);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch data");
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        const response = await axios.get(`${API_URL}/${selectedTab.endpoint}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+        if (isCurrentRequest) {
+          setRecords(
+            Array.isArray(response.data.result) ? response.data.result : [],
+          );
+        }
+      } catch (requestError) {
+        if (isCurrentRequest) {
+          setRecords([]);
+          setError(
+            requestError.response?.data?.message ||
+              "Unable to retrieve data from the server.",
+          );
+        }
+      } finally {
+        if (isCurrentRequest) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchRecords();
+
+    return () => {
+      isCurrentRequest = false;
+    };
+  }, [activeTab, token]);
 
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
         <div className="header-content">
-          <h1>Dashboard</h1>
-          <div className="user-info">
-            <span className="user-email">{user?.email}</span>
-            <span className="user-role">{user?.role.toUpperCase()}</span>
-            <button onClick={handleLogout} className="logout-btn">
-              Logout
-            </button>
+          <div className="brand-mark">
+            <span className="brand-dot" aria-hidden="true" />
+            <span>Taskspace</span>
           </div>
+          <button type="button" className="logout-btn" onClick={logout}>
+            Log out
+          </button>
         </div>
       </header>
 
       <main className="dashboard-content">
-        <div className="tabs">
-          <button
-            className={`tab ${activeTab === "employees" ? "active" : ""}`}
-            onClick={() => setActiveTab("employees")}
-          >
-            Employees
-          </button>
-          <button
-            className={`tab ${activeTab === "clients" ? "active" : ""}`}
-            onClick={() => setActiveTab("clients")}
-          >
-            Clients
-          </button>
-        </div>
+        <section className="welcome-panel">
+          <div>
+            <p className="eyebrow">Your workspace</p>
+            <h1>Welcome{user?.name ? `, ${user.name}` : " back"}</h1>
+            <p className="welcome-copy">
+              Keep your tasks moving and your priorities in view.
+            </p>
+          </div>
+          <div className="welcome-accent" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+        </section>
 
-        {loading && <div className="loading">Loading data...</div>}
-        {error && <div className="error">{error}</div>}
+        {user && (
+          <section className="user-info" aria-labelledby="user-info-heading">
+            <h2 id="user-info-heading">User Information</h2>
+            <div className="profile-grid">
+              <div className="profile-field">
+                <span className="field-label">Name</span>
+                <strong>{user.name}</strong>
+              </div>
+              <div className="profile-field">
+                <span className="field-label">Email</span>
+                <strong>{user.email}</strong>
+              </div>
+              <div className="profile-field">
+                <span className="field-label">Role</span>
+                <strong className="role-badge">{user.role}</strong>
+              </div>
+            </div>
+          </section>
+        )}
 
-        {activeTab === "employees" && !loading && (
-          <div className="data-section">
-            <h2>Employees</h2>
-            {employees.length === 0 ? (
-              <p>No employees found</p>
-            ) : (
+        <section
+          className="directory-section"
+          aria-labelledby="directory-heading"
+        >
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">People directory</p>
+              <h2 id="directory-heading">Browse your team</h2>
+            </div>
+            <span className="record-count">
+              {loading
+                ? "Loading"
+                : `${records.length} ${records.length === 1 ? "person" : "people"}`}
+            </span>
+          </div>
+
+          <div className="data-tabs" role="tablist" aria-label="Team data">
+            {dataTabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                className={`data-tab ${activeTab === tab.key ? "active" : ""}`}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {loading && (
+            <div className="table-state">Loading {activeTab} data...</div>
+          )}
+
+          {!loading && error && (
+            <div className="table-state error-state" role="alert">
+              <strong>{error}</strong>
+              <span>Try selecting this tab again in a moment.</span>
+            </div>
+          )}
+
+          {!loading && !error && records.length === 0 && (
+            <div className="table-state">
+              No {activeTab} records were found.
+            </div>
+          )}
+
+          {!loading && !error && records.length > 0 && (
+            <div className="table-wrapper">
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Gender</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Phone</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {employees.map((emp) => (
-                    <tr key={emp.employee_id}>
-                      <td>{emp.employee_id}</td>
-                      <td>{`${emp.first_name} ${emp.last_name}`}</td>
-                      <td>{emp.email}</td>
-                      <td>{emp.phone}</td>
-                      <td>{emp.gender}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
+                  {records.map((record) => {
+                    const recordId =
+                      record.id ||
+                      record.admin_id ||
+                      record.manager_id ||
+                      record.employee_id;
 
-        {activeTab === "clients" && !loading && (
-          <div className="data-section">
-            <h2>Clients</h2>
-            {clients.length === 0 ? (
-              <p>No clients found</p>
-            ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clients.map((client) => (
-                    <tr key={client.client_id}>
-                      <td>{client.client_id}</td>
-                      <td>{client.client_name}</td>
-                      <td>{client.email}</td>
-                      <td>{client.phone}</td>
-                    </tr>
-                  ))}
+                    return (
+                      <tr key={recordId}>
+                        <td data-label="ID">{recordId || "-"}</td>
+                        <td data-label="Name">{record.name || "-"}</td>
+                        <td data-label="Email">{record.email || "-"}</td>
+                        <td data-label="Phone">
+                          {record.phone || record.phone_number || "-"}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </section>
       </main>
     </div>
   );

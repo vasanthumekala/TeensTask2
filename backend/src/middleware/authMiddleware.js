@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -8,28 +8,14 @@ const authMiddleware = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const decoded = jwt.verify(token, "vasanthu");
+    console.log(decoded)
+    req.user = decoded
+    console.log(req.user)
     next();
   } catch (error) {
     return res.status(403).json({ message: "Invalid or expired token" });
   }
 };
 
-const roleMiddleware = (...allowedRoles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
-
-    if (!allowedRoles.includes(req.user.role)) {
-      return res
-        .status(403)
-        .json({ message: "Access denied. Insufficient permissions" });
-    }
-
-    next();
-  };
-};
-
-module.exports = { authMiddleware, roleMiddleware };
+export { authMiddleware };
