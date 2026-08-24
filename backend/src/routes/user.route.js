@@ -14,17 +14,7 @@ router.post("/login", login);
 
 //role based access
 router.get("/admin", authMiddleware, authorization("admin"), adminPath);
-router.get(
-  "/manager",
-  authMiddleware,
-  authorization("admin", "manager"),
-  managerPath,
-);
-router.get(
-  "/employee",
-  authMiddleware,
-  authorization("admin", "manager", "employee"),
-  employeePath,
-);
+router.get("/manager",authMiddleware,authorization("admin", "manager"),managerPath,);
+router.get("/employee",authMiddleware,authorization("admin", "manager", "employee"),employeePath,);
 
 export default router;

@@ -14,7 +14,6 @@ export const registerUser = async (req, res) => {
     `;
 
     const result = await client.query(checkQuery, [email]);
-    console.log(result);
     if (result.rows.length > 0) {
       return res.status(409).json({
         message: "Email already exists",
