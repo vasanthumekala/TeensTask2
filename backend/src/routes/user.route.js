@@ -2,10 +2,11 @@ import express from "express";
 const router = express.Router();
 
 import { registerUser, login } from "../controllers/user.controller.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
 import { adminPath } from "../controllers/admin.controller.js";
 import { managerPath } from "../controllers/manager.controller.js";
 import { employeePath } from "../controllers/employee.controller.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+
 import { authorization } from "../middleware/roleMiddleware.js";
 
 //authentication
