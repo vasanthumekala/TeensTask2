@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import client from "../db/connect.js";
 import jwt from "jsonwebtoken";
+import "dotenv/config";
 
 //registration for user
 export const registerUser = async (req, res) => {
@@ -24,7 +25,8 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const insertQuery = `
     INSERT INTO users (name, email, password, role)
-    VALUES ($1, $2, $3, $4);
+    VALUES ($1, $2, $3, $4)
+    RETURNING id, name, email, role;
     `;
 
     const newEmployee = await client.query(insertQuery, [
@@ -34,9 +36,17 @@ export const registerUser = async (req, res) => {
       role,
     ]);
 
+    const user = newEmployee.rows[0];
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" },
+    );
+
     res.status(201).json({
       message: "User registered successfully",
-      result: newEmployee,
+      jwt: token,
+      user,
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -71,10 +81,12 @@ export const login = async (req, res) => {
       role: role,
     };
     console.log(userCredentials);
-    const token = jwt.sign(userCredentials, "vasanthu", {
+    const token = jwt.sign(userCredentials, process.env.JWT_SECRET, {
       expiresIn: "24h",
     });
-    return res.status(201).json({ message: "Login success", jwt: token,user: userFind.rows[0] });
+    return res
+      .status(201)
+      .json({ message: "Login success", jwt: token, user: userFind.rows[0] });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error" });
