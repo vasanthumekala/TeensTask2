@@ -284,7 +284,9 @@ export default function Dashboard() {
                         {task.description || "-"}
                       </td>
                       <td data-label="Status">
-                        <span className={`status-badge status-${task.status?.toLowerCase()}`}>
+                        <span
+                          className={`status-badge status-${task.status?.toLowerCase()}`}
+                        >
                           {task.status || "-"}
                         </span>
                       </td>
