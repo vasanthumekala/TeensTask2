@@ -423,3 +423,41 @@
     text-transform: uppercase;
   }
 }
+
+.tasks-section {
+  margin-top: 28px;
+  padding: 30px;
+  border: 1px solid #dce6e1;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(23, 60, 61, 0.05);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-badge.status-pending {
+  background: #fef3e0;
+  color: #c68c00;
+}
+
+.status-badge.status-in-progress {
+  background: #dfe7f5;
+  color: #1f4a8c;
+}
+
+.status-badge.status-completed {
+  background: #e4f3e6;
+  color: #2d7d4a;
+}
+
+.status-badge.status-on-hold {
+  background: #f5e0e0;
+  color: #8c3d38;
+}

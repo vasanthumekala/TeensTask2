@@ -2,6 +2,7 @@ import client from "../db/connect.js";
 
 const employeePath = async (req,res) => {
     try{
+        const userId = req.user.id;
         const employeeQuery = `SELECT employee_id,name,email,phone FROM employees;`;
         const employeeResult = await client.query(employeeQuery);
         res.status(200).json({message: "Employee data retrieved", result: employeeResult.rows});

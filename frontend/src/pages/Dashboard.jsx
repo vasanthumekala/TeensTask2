@@ -17,6 +17,9 @@ export default function Dashboard() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [tasks, setTasks] = useState([]);
+  const [tasksLoading, setTasksLoading] = useState(false);
+  const [tasksError, setTasksError] = useState("");
 
   useEffect(() => {
     const selectedTab = dataTabs.find((tab) => tab.key === activeTab);
@@ -57,6 +60,47 @@ export default function Dashboard() {
       isCurrentRequest = false;
     };
   }, [activeTab, token]);
+
+  useEffect(() => {
+    let isCurrentRequest = true;
+
+    const fetchTasks = async () => {
+      setTasksLoading(true);
+      setTasksError("");
+
+      try {
+        const response = await axios.get(`${API_URL}/mytasks`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (isCurrentRequest) {
+          setTasks(
+            Array.isArray(response.data.result) ? response.data.result : [],
+          );
+        }
+      } catch (requestError) {
+        if (isCurrentRequest) {
+          setTasks([]);
+          setTasksError(
+            requestError.response?.data?.message ||
+              "Unable to retrieve tasks from the server.",
+          );
+        }
+      } finally {
+        if (isCurrentRequest) {
+          setTasksLoading(false);
+        }
+      }
+    };
+
+    if (token) {
+      fetchTasks();
+    }
+
+    return () => {
+      isCurrentRequest = false;
+    };
+  }, [token]);
 
   return (
     <div className="dashboard-container">
@@ -186,6 +230,66 @@ export default function Dashboard() {
                       </tr>
                     );
                   })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section className="tasks-section" aria-labelledby="tasks-heading">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Your work</p>
+              <h2 id="tasks-heading">Assigned Tasks</h2>
+            </div>
+            <span className="record-count">
+              {tasksLoading
+                ? "Loading"
+                : `${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}`}
+            </span>
+          </div>
+
+          {tasksLoading && (
+            <div className="table-state">Loading your tasks...</div>
+          )}
+
+          {!tasksLoading && tasksError && (
+            <div className="table-state error-state" role="alert">
+              <strong>{tasksError}</strong>
+              <span>Try refreshing the page in a moment.</span>
+            </div>
+          )}
+
+          {!tasksLoading && !tasksError && tasks.length === 0 && (
+            <div className="table-state">
+              No tasks have been assigned to you yet.
+            </div>
+          )}
+
+          {!tasksLoading && !tasksError && tasks.length > 0 && (
+            <div className="table-wrapper">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Task Name</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map((task) => (
+                    <tr key={task.task_id}>
+                      <td data-label="Task Name">{task.task_name || "-"}</td>
+                      <td data-label="Description">
+                        {task.description || "-"}
+                      </td>
+                      <td data-label="Status">
+                        <span className={`status-badge status-${task.status?.toLowerCase()}`}>
+                          {task.status || "-"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
