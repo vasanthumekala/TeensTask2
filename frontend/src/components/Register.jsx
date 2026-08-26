@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Register.css";
 import axios from "axios";
+import { useAuth } from "../context/useAuth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -16,6 +17,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { saveAuthentication } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,9 +44,9 @@ export default function Register() {
           password,
           role,
         });
-        console.log(response.data);
-        console.log(response);
-        return { success: true, user: response.data.user };
+        const { jwt, user } = response.data;
+        saveAuthentication(jwt, user);
+        return { success: true };
       } catch (err) {
         const errorMessage =
           err.response?.data?.message || "Registration failed";
@@ -56,7 +58,7 @@ export default function Register() {
     };
     const result = await register(name, email, password, role);
     if (result.success) {
-      navigate("/login");
+      navigate("/dashboard");
     }
   };
 
