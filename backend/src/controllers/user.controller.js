@@ -3,10 +3,34 @@ import client from "../db/connect.js";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 
+import {
+  loginUserSchema,
+  registerUserSchema,
+} from "../validations/userinputs.schema.js";
+
+const sendValidationError = (res, error) => {
+  const fieldErrors = error.flatten().fieldErrors;
+  const firstMessage =
+    Object.values(fieldErrors).flat()[0] ||
+    error.issues[0]?.message ||
+    "Validation failed";
+
+  return res.status(400).json({
+    message: firstMessage,
+    errors: fieldErrors,
+  });
+};
+
 //registration for user
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role = "employee" } = req.body;
+    const validation = registerUserSchema.safeParse(req.body);
+    if (!validation.success) {
+      console.warn("Registration validation failed:", validation.error.issues);
+      return sendValidationError(res, validation.error);
+    }
+    console.log("even consoling")
+    const { name, email, password, role } = validation.data;
 
     const checkQuery = `
     SELECT *
@@ -56,9 +80,13 @@ export const registerUser = async (req, res) => {
 
 //login for user
 export const login = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
+    const validation = loginUserSchema.safeParse(req.body);
+    if (!validation.success) {
+      return sendValidationError(res, validation.error);
+    }
+
+    const { email, password } = validation.data;
     const dbQuery = `SELECT * FROM USERS WHERE EMAIL=$1;`;
     const userFind = await client.query(dbQuery, [email]);
     if (userFind.rows.length === 0) {

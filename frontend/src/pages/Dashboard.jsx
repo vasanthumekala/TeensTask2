@@ -30,7 +30,7 @@ export default function Dashboard() {
       setError("");
 
       try {
-        const response = await axios.get(`${API_URL}/${selectedTab.endpoint}`, {
+        const response = await axios.get(`${API_URL}/all${selectedTab.endpoint}s`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

@@ -1,8 +1,7 @@
 import client from "../db/connect.js";
 
-const managerPath = async (req,res) => {
+const managerPath = async (res) => {
     try {
-        const userId = req.user.id;
         const managerQuery = `SELECT manager_id,name,email,phone FROM managers WHERE manager_id = $1;`;
         const managerResult = await client.query(managerQuery, [userId]);
         res.status(200).json({message: "Manager data retrieved", result: managerResult.rows});

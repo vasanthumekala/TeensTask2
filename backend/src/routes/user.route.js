@@ -6,7 +6,7 @@ import { adminPath } from "../controllers/admin.controller.js";
 import { managerPath } from "../controllers/manager.controller.js";
 import { employeePath } from "../controllers/employee.controller.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
-import { taskPath } from "../controllers/taks.controller.js";
+import { taskPath } from "../controllers/tasks.controller.js";
 
 import { authorization } from "../middleware/roleMiddleware.js";
 
@@ -15,8 +15,23 @@ router.post("/register", registerUser);
 router.post("/login", login);
 
 //role based access
-router.get("/admin", authMiddleware, authorization("admin"), adminPath);
-router.get("/manager",authMiddleware,authorization("admin", "manager"),managerPath);
-router.get("/employee",authMiddleware,authorization("admin", "manager", "employee"),employeePath);
-router.get("/mytasks", authMiddleware, authorization("admin", "manager", "employee"), taskPath);
+router.get("/alladmins", authMiddleware, authorization("admin"), adminPath);
+router.get(
+  "/allmanagers",
+  authMiddleware,
+  authorization("admin", "manager"),
+  managerPath,
+);
+router.get(
+  "/allemployees",
+  authMiddleware,
+  authorization("admin", "manager", "employee"),
+  employeePath,
+);
+router.get(
+  "/mytasks",
+  authMiddleware,
+  authorization("admin", "manager", "employee"),
+  taskPath,
+);
 export default router;
