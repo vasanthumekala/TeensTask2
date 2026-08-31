@@ -29,9 +29,14 @@ export default function Login() {
 
         return { success: true, user };
       } catch (err) {
+        const fieldErrors = err.response?.data?.errors;
+        const specificError = fieldErrors
+          ? Object.values(fieldErrors).flat()[0]
+          : null;
         const errorMessage = err.response?.data?.message || "Login failed";
-        setError(errorMessage);
-        return { success: false, error: errorMessage };
+        const displayedError = specificError || errorMessage;
+        setError(displayedError);
+        return { success: false, error: displayedError };
       } finally {
         setLoading(false);
       }

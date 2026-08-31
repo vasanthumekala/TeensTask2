@@ -23,6 +23,12 @@ export default function Register() {
     e.preventDefault();
     setValidationError("");
 
+    // const trimmedName = name.trim();
+    // if (!/^[\p{L}\s.'’-]+$/u.test(trimmedName)) {
+    //   setValidationError("Name must contain only letters and valid spacing");
+    //   return;
+    // }
+
     // Validate passwords match
     if (password !== confirmPassword) {
       setValidationError("Passwords do not match");
@@ -48,8 +54,12 @@ export default function Register() {
         saveAuthentication(jwt, user);
         return { success: true };
       } catch (err) {
+        const fieldErrors = err.response?.data?.errors;
+        const specificError = fieldErrors
+          ? Object.values(fieldErrors).flat()[0]
+          : null;
         const errorMessage =
-          err.response?.data?.message || "Registration failed";
+          specificError || err.response?.data?.message || "Registration failed";
         setError(errorMessage);
         return { success: false, error: errorMessage };
       } finally {
@@ -75,6 +85,8 @@ export default function Register() {
               placeholder="Enter your name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              pattern="^[A-Za-z\s.'’-]+$"
+              title="Name must contain only letters and valid spacing"
               required
               disabled={loading}
             />
