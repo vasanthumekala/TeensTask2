@@ -20,7 +20,6 @@ const sendValidationError = (res, error) => {
     errors: fieldErrors,
   });
 };
-
 //registration for user
 export const registerUser = async (req, res) => {
   try {
