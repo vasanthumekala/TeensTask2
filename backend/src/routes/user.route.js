@@ -15,15 +15,15 @@ router.post("/register", registerUser);
 router.post("/login", login);
 
 //role based access
-router.get("/alladmins", authMiddleware, authorization("admin"), adminPath);
+router.get("/admin", authMiddleware, authorization("admin"), adminPath);
 router.get(
-  "/allmanagers",
+  "/manager",
   authMiddleware,
   authorization("admin", "manager"),
   managerPath,
 );
 router.get(
-  "/allemployees",
+  "/employee",
   authMiddleware,
   authorization("admin", "manager", "employee"),
   employeePath,
